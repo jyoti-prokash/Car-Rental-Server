@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // middleware
 
@@ -33,7 +33,14 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-
+    // get cars details by id
+    app.get("/cars/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await carRentalCollection.findOne(query);
+      res.send(result);
+    });
+    // creating post add car
     app.post("/cars", async (req, res) => {
       const newCar = req.body;
       const result = await carRentalCollection.insertOne(newCar);
