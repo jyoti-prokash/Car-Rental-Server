@@ -51,6 +51,13 @@ async function run() {
       const result = await carRentalCollection.insertOne(newCar);
       res.send(result);
     });
+    // delete data
+     app.delete("/cars/:id", async (req, res) => {
+       const id = req.params.id;
+       const query = { _id: new ObjectId(id) };
+       const result = await carRentalCollection.deleteOne(query);
+       res.send(result);
+     });
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
