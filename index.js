@@ -29,7 +29,12 @@ async function run() {
     const carRentalCollection = client.db("carREntalDB").collection("cars");
     // all AvailableCars
     app.get("/cars", async (req, res) => {
-      const cursor = carRentalCollection.find();
+      const email = req.query.email
+      let query = {};
+      if(email){
+        query = {adder_email:email}
+      }
+      const cursor = carRentalCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
