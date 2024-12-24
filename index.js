@@ -29,10 +29,10 @@ async function run() {
     const carRentalCollection = client.db("carREntalDB").collection("cars");
     // all AvailableCars
     app.get("/cars", async (req, res) => {
-      const email = req.query.email
+      const email = req.query.email;
       let query = {};
-      if(email){
-        query = {adder_email:email}
+      if (email) {
+        query = { adder_email: email };
       }
       const cursor = carRentalCollection.find(query);
       const result = await cursor.toArray();
@@ -52,12 +52,12 @@ async function run() {
       res.send(result);
     });
     // delete data
-     app.delete("/cars/:id", async (req, res) => {
-       const id = req.params.id;
-       const query = { _id: new ObjectId(id) };
-       const result = await carRentalCollection.deleteOne(query);
-       res.send(result);
-     });
+    app.delete("/cars/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await carRentalCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // recent posted car
     app.get("/recent-cars", async (req, res) => {
@@ -66,6 +66,40 @@ async function run() {
       res.send(result);
     });
 
+    // update data
+    app.patch("/update/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const newCar = req.body;
+
+        const query = { _id: new ObjectId(id) };
+        const update = {
+          $set: {
+            photo: newCar.photo,
+            carModel: newCar.carModel,
+            dailyRentalPrice: newCar.dailyRentalPrice,
+            description: newCar.description,
+            availability: newCar.availability,
+            registrationNumber: newCar.registrationNumber,
+            features: newCar.features,
+            location: newCar.location,
+          },
+        };
+
+        const result = await carRentalCollection.updateOne(query, update);
+
+        if (result.modifiedCount > 0) {
+          res.send({ success: true, message: "Car updated successfully." });
+        } else {
+          res.send({ success: false, message: "Car update failed." });
+        }
+      } catch (error) {
+        console.error("Error updating car:", error);
+        res
+          .status(500)
+          .send({ success: false, message: "Internal server error." });
+      }
+    });
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
