@@ -27,6 +27,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const carRentalCollection = client.db("carREntalDB").collection("cars");
+    const carBookingCollection = client.db("carREntalDB").collection("booking");
     // all AvailableCars
     app.get("/cars", async (req, res) => {
       const email = req.query.email;
@@ -100,6 +101,58 @@ async function run() {
           .send({ success: false, message: "Internal server error." });
       }
     });
+
+    // booking collection .....................
+
+    // creating post add car
+    app.post("/booking", async (req, res) => {
+      try {
+        const bookingCar = req.body;
+
+        // Insert booking into carBookingCollection
+        const result = await carBookingCollection.insertOne(bookingCar);
+
+        // bookingCount Update
+        const filter = { _id: new ObjectId(bookingCar.bookingId) }; // Use `_id` field
+        const update = {
+          $inc: { bookingCount: 1 },
+        };
+
+        // Update bookingCount in carRentalCollection
+        const updateBookingCount = await carRentalCollection.updateOne(
+          filter,
+          update
+        );
+
+        // Combine responses for debugging or confirmation
+        const response = {
+          bookingResult: result,
+          bookingCountUpdate: updateBookingCount,
+        };
+
+        res.send(response);
+      } catch (error) {
+        console.error("Error processing booking:", error);
+        res.status(500).send({ error: "Internal Server Error" });
+      }
+    });
+
+    // get booking
+    app.get("/booking", async (req, res) => {
+      const email = req.query.email;
+      let query = {};
+      if (email) {
+        query = { bookingUser: email };
+      }
+      const cursor = carBookingCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+
+
+
+
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
