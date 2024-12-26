@@ -11,7 +11,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://car-rental-d77a7.web.app",
+      "https://car-rental-d77a7.firebaseapp.com",
+      "https://vercel.com/jyoti-prokashs-projects",
+    ],
     credentials: true,
   })
 );
@@ -28,7 +33,6 @@ const verifyToken = (req, res, next) => {
     if (err) {
       return res.status(401).send({ message: "unauthorized access verify" });
     }
-    console.log(decoded);
     req.user = decoded;
     next();
   });
@@ -70,7 +74,7 @@ async function run() {
       // verify token
       if (req.user.email !== req.query.email) {
         return res.status(403).send({ message: "forbidden access" });
-      };
+      }
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -198,10 +202,60 @@ async function run() {
       res.send(result);
     });
 
+    //   try {
+    //     const id = req.params.id;
+    //     const newDate = req.body;
+
+    //     const query = { _id: new ObjectId(id) };
+    //     const update = {
+    //       $set: {
+    //         startDate: booking.startDate,
+    //         endDate: booking.endDate,
+    //       },
+    //     };
+
+    //     const result = await carBookingCollection.updateOne(query, update);
+
+    //     if (result.modifiedCount > 0) {
+    //       res.send({ success: true, message: "Car updated successfully." });
+    //     } else {
+    //       res.send({ success: false, message: "Car update failed." });
+    //     }
+    //   } catch (error) {
+    //     console.error("Error updating car:", error);
+    //     res
+    //       .status(500)
+    //       .send({ success: false, message: "Internal server error." });
+    //   }
+    // });
+
+    // json web token................
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "2h" });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      });
+      res.send({ success: true });
+    });
+
+    // logOut jwt
+    app.post("/logout", (req, res) => {
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
@@ -211,33 +265,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-// json web token
-app.post("/jwt", async (req, res) => {
-  const user = req.body;
-  const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "2h" });
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: false,
-  });
-  res.send({ success: true });
-});
-
-// logOut jwt
-app.post("/logout", (req, res) => {
-  res
-    .clearCookie("token", {
-      httpOnly: true,
-      secure: false,
-    })
-    .send({ success: true });
-});
-
-
-
-
-
-
 
 app.get("/", (req, res) => {
   res.send("car rental server is running");
