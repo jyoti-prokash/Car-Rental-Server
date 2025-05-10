@@ -202,33 +202,6 @@ async function run() {
       res.send(result);
     });
 
-    //   try {
-    //     const id = req.params.id;
-    //     const newDate = req.body;
-
-    //     const query = { _id: new ObjectId(id) };
-    //     const update = {
-    //       $set: {
-    //         startDate: booking.startDate,
-    //         endDate: booking.endDate,
-    //       },
-    //     };
-
-    //     const result = await carBookingCollection.updateOne(query, update);
-
-    //     if (result.modifiedCount > 0) {
-    //       res.send({ success: true, message: "Car updated successfully." });
-    //     } else {
-    //       res.send({ success: false, message: "Car update failed." });
-    //     }
-    //   } catch (error) {
-    //     console.error("Error updating car:", error);
-    //     res
-    //       .status(500)
-    //       .send({ success: false, message: "Internal server error." });
-    //   }
-    // });
-
     // json web token................
     app.post("/jwt", async (req, res) => {
       const user = req.body;
